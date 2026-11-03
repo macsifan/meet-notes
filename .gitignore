@@ -1,0 +1,20 @@
+node_modules/
+
+# Модель распознавания — 1.6 ГБ, ставится скриптом setup.sh
+models/*.bin
+
+# Записи встреч и заметки: личные данные, в репозитории им не место
+data/recordings/
+data/notes/
+data/server.log
+data/*.log
+
+# Глоссарий и фрагменты для замеров качества: внутренние термины и голоса коллег
+data/glossary.txt
+data/eval/
+
+# Синтетическая встреча для тестов, собирается scripts/make-fixture.mjs
+test/fixtures/meeting.m4a
+test/fixtures/meeting.meta.json
+
+.DS_Store

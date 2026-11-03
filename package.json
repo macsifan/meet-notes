@@ -1,0 +1,16 @@
+{
+  "name": "meet-notes",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Локальный AI note taker для Google Meet: запись → Whisper → выжимка Claude",
+  "scripts": {
+    "test": "node --test",
+    "server": "node server/index.mjs",
+    "server:dev": "node --watch server/index.mjs",
+    "pipeline": "node pipeline/run.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}

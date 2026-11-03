@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Meet Notes",
+  "version": "0.1.0",
+  "description": "Записывает встречи Google Meet и превращает их в заметки с решениями и задачами. Всё локально.",
+  "permissions": ["tabCapture", "offscreen", "storage", "activeTab"],
+  "host_permissions": ["http://127.0.0.1:8788/*", "https://meet.google.com/*"],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Meet Notes"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["speaker-detect.js", "meeting-info.js", "text-utils.js", "participant-name.js"],
+      "matches": ["https://meet.google.com/*"]
+    }
+  ],
+  "options_page": "setup.html"
+}

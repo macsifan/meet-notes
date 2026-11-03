@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>Meet Notes — настройка</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #1f1f1f;
+        --muted: #5f6368;
+        --ok: #188038;
+        --danger: #d93025;
+        --accent: #1a73e8;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1f1f1f;
+          --fg: #e8eaed;
+          --muted: #9aa0a6;
+        }
+      }
+      body {
+        max-width: 620px;
+        margin: 0 auto;
+        padding: 40px 24px;
+        background: var(--bg);
+        color: var(--fg);
+        font: 15px/1.6 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0 0 24px;
+      }
+      section {
+        margin: 0 0 28px;
+      }
+      h2 {
+        font-size: 15px;
+        margin: 0 0 6px;
+      }
+      p {
+        margin: 0 0 10px;
+        color: var(--muted);
+      }
+      button {
+        padding: 9px 16px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+      .state {
+        font-weight: 500;
+      }
+      .ok {
+        color: var(--ok);
+      }
+      .fail {
+        color: var(--danger);
+      }
+      code {
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: rgba(128, 128, 128, 0.18);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Настройка Meet Notes</h1>
+
+    <section>
+      <h2>1. Доступ к микрофону</h2>
+      <p>
+        Нужен один раз: без него в записи будут слышны только собеседники, но не вы.
+        Запросить его можно лишь с этой страницы — во время встречи будет поздно.
+      </p>
+      <button id="requestMic">Разрешить микрофон</button>
+      <p class="state" id="micState"></p>
+    </section>
+
+    <section>
+      <h2>2. Сервер заметок</h2>
+      <p>Расшифровка и выжимка идут на вашем компьютере. Сервер запускается командой <code>npm run server</code>.</p>
+      <button id="checkServer">Проверить сервер</button>
+      <p class="state" id="serverState"></p>
+    </section>
+
+    <section>
+      <h2>3. Как записывать</h2>
+      <p>
+        Зайдите во встречу и нажмите на иконку расширения — запись начнётся сама.
+        Когда вы выйдете из встречи, она остановится и уйдёт в обработку.
+        Заметка появится в разделе <a href="http://127.0.0.1:8788/" target="_blank">Мои заметки</a>.
+      </p>
+      <p>
+        Chrome не разрешает захват вкладки без клика пользователя, поэтому один клик
+        по иконке всё же нужен. Участников расширение ни о чём не уведомляет.
+      </p>
+    </section>
+
+    <script src="setup.js"></script>
+  </body>
+</html>
