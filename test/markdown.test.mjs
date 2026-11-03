@@ -56,3 +56,15 @@ test('блок с транскриптом остаётся сворачивае
   assert.match(html, /<details>/);
   assert.match(html, /<summary>Полный транскрипт<\/summary>/);
 });
+
+test('details и summary из render.mjs превращаются в разметку', () => {
+  const html = markdownToHtml('<details>\n<summary>Полный транскрипт</summary>\n\n- реплика\n\n</details>');
+  assert.match(html, /^<details>\n<summary>Полный транскрипт<\/summary>/);
+  assert.match(html, /<\/details>$/);
+});
+
+test('details с атрибутами из выжимки или транскрипта остаётся текстом', () => {
+  const html = markdownToHtml('<details open ontoggle="alert(1)">\n<summary onclick="x()">a</summary>');
+  assert.doesNotMatch(html, /<details|<summary/);
+  assert.match(html, /&lt;details open ontoggle=&quot;alert\(1\)&quot;&gt;/);
+});

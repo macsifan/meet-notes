@@ -4,11 +4,17 @@
  * цитаты, жирный текст и сворачиваемый транскрипт.
  */
 
-/** Теги, которые render.mjs вставляет намеренно, — единственный HTML, который пропускается как есть. */
-const ALLOWED_TAGS = ['details', 'summary'];
-
-function escapeHtml(text) {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+/**
+ * Экранирует и кавычки: результат вставляется не только в текст, но и в <title>
+ * и атрибуты, а название встречи задаёт её организатор — это чужой ввод.
+ */
+export function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 /** Разметка строки разбирается по сырому тексту, а экранируется уже её содержимое. */
@@ -16,8 +22,17 @@ function content(text) {
   return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 }
 
-function isAllowedTag(line) {
-  return ALLOWED_TAGS.some((tag) => line.startsWith(`<${tag}`) || line.startsWith(`</${tag}`));
+/**
+ * Сворачиваемые блоки, которые render.mjs вставляет намеренно, — единственный
+ * HTML, который пропускается. Строки сверяются целиком, без атрибутов: в заметку
+ * попадают выжимка модели и транскрипт, и «<details open onclick=…>» оттуда
+ * должен остаться текстом. Текст внутри <summary> экранируется.
+ * @returns {string|null}
+ */
+function allowedTag(line) {
+  if (line === '<details>' || line === '</details>') return line;
+  const summary = line.match(/^<summary>([^<>]*)<\/summary>$/);
+  return summary ? `<summary>${escapeHtml(summary[1])}</summary>` : null;
 }
 
 /**
@@ -88,9 +103,10 @@ export function markdownToHtml(markdown) {
       continue;
     }
 
-    if (isAllowedTag(trimmed)) {
+    const tag = allowedTag(trimmed);
+    if (tag) {
       closeList();
-      html.push(trimmed);
+      html.push(tag);
       continue;
     }
 

@@ -5,7 +5,8 @@
  * Расширение стримит аудио чанками по 5 секунд, поэтому падение Chrome
  * стоит максимум одного чанка. По /finish запись уходит в очередь обработки.
  *
- * Слушает только 127.0.0.1 — наружу ничего не открывается.
+ * Слушает только 127.0.0.1 — наружу ничего не открывается, а запросы
+ * от посторонних сайтов в браузере отсекает isTrustedRequest.
  */
 
 import http from 'node:http';
@@ -15,7 +16,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { processRecording } from '../pipeline/run.mjs';
-import { markdownToHtml, extractNoteHeader } from './markdown.mjs';
+import { markdownToHtml, extractNoteHeader, escapeHtml } from './markdown.mjs';
+import { isTrustedRequest } from './guard.mjs';
 import { findUnprocessed } from './recovery.mjs';
 
 const PAGE_STYLE = `
@@ -49,7 +51,7 @@ summary { cursor: pointer; color: var(--fg); font-weight: 500; margin-bottom: 12
 function page(title, body) {
   return `<!doctype html><html lang="ru"><head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>${title}</title><style>${PAGE_STYLE}</style></head><body>${body}</body></html>`;
+<title>${escapeHtml(title)}</title><style>${PAGE_STYLE}</style></head><body>${body}</body></html>`;
 }
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -120,12 +122,7 @@ function readBody(req) {
 }
 
 function send(res, status, body, headers = {}) {
-  res.writeHead(status, {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    ...headers,
-  });
+  res.writeHead(status, headers);
   res.end(body);
 }
 
@@ -168,7 +165,7 @@ async function handle(req, res) {
   const url = new URL(req.url, `http://127.0.0.1:${PORT}`);
   const segments = url.pathname.split('/').filter(Boolean);
 
-  if (req.method === 'OPTIONS') return send(res, 204, '');
+  if (!isTrustedRequest(req.headers, PORT)) return sendJson(res, 403, { error: 'запрос не от расширения' });
 
   if (req.method === 'POST' && segments[0] === 'ingest') {
     const [, id, action] = segments;
@@ -233,14 +230,14 @@ async function handle(req, res) {
     const items = notes
       .map(
         (note) =>
-          `<li><a href="/notes/${encodeURIComponent(note.file)}">${note.title}<br /><span class="date">${note.when}</span></a></li>`,
+          `<li><a href="/notes/${encodeURIComponent(note.file)}">${escapeHtml(note.title)}<br /><span class="date">${escapeHtml(note.when)}</span></a></li>`,
       )
       .join('\n');
 
     const body = [
       '<h1>Заметки встреч</h1>',
       processing.length
-        ? `<p class="empty">Сейчас обрабатывается: ${processing.map((s) => s.status).join(', ')}</p>`
+        ? `<p class="empty">Сейчас обрабатывается: ${escapeHtml(processing.map((s) => s.status).join(', '))}</p>`
         : '',
       items ? `<ul class="notes">${items}</ul>` : '<p class="empty">Пока пусто — запишите первую встречу.</p>',
     ].join('\n');
