@@ -7,6 +7,9 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MODEL_PATH="$PROJECT_DIR/models/ggml-large-v3-turbo.bin"
 MODEL_URL="https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin"
+# VAD вырезает тишину до распознавания: без неё на паузах Whisper галлюцинирует.
+VAD_PATH="$PROJECT_DIR/models/ggml-silero-v5.1.2.bin"
+VAD_URL="https://huggingface.co/ggml-org/whisper-vad/resolve/main/ggml-silero-v5.1.2.bin"
 
 echo "→ проверяю инструменты"
 MISSING=()
@@ -34,6 +37,13 @@ if [[ -f "$MODEL_PATH" ]]; then
 else
   echo "→ качаю модель распознавания (~1.6 ГБ, один раз)"
   curl -L --fail --progress-bar -o "$MODEL_PATH" "$MODEL_URL"
+fi
+
+if [[ -f "$VAD_PATH" ]]; then
+  echo "  модель тишины (VAD) уже скачана"
+else
+  echo "→ качаю модель тишины (VAD, ~1 МБ)"
+  curl -L --fail --progress-bar -o "$VAD_PATH" "$VAD_URL"
 fi
 
 echo
